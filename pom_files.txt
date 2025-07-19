@@ -1,0 +1,5 @@
+./CustomerOrderServices/pom.xml
+./CustomerOrderServicesApp/pom.xml
+./CustomerOrderServicesProject/pom.xml
+./CustomerOrderServicesTest/pom.xml
+./CustomerOrderServicesWeb/pom.xml

@@ -7,8 +7,8 @@ import javax.naming.NamingException;
 import org.apache.wink.client.Resource;
 import org.apache.wink.client.RestClient;
 
-import com.ibm.json.java.JSONArray;
-import com.ibm.json.java.JSONObject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 
 import junit.framework.TestCase;
 
@@ -30,7 +30,7 @@ public class ProductRESTSearchTest extends TestCase {
 		RestClient client = new RestClient();
 		Resource resource = client.resource(urlPrefix + "jaxrs/Product/1");
 
-		JSONObject product = resource.accept("application/json").get(JSONObject.class);
+		JsonObject product = resource.accept("application/json").get(JsonObject.class);
 		assertEquals("Return of the Jedi", product.get("name"));
 		assertEquals(29.99, product.get("price"));
 		assertEquals(new Long(1), (Long) product.get("id"));
@@ -42,9 +42,9 @@ public class ProductRESTSearchTest extends TestCase {
 		RestClient client = new RestClient();
 		Resource resource = client.resource(urlPrefix + "jaxrs/Product?categoryId=1");
 
-		JSONArray productList = resource.accept("application/json").get(JSONArray.class);
+		JsonArray productList = resource.accept("application/json").get(JsonArray.class);
 		for (int i = 0; i < productList.size(); i++) {
-			JSONObject product = (JSONObject) productList.get(i);
+			JsonObject product = (JsonObject) productList.get(i);
 
 			switch (((Long) product.get("id")).intValue()) {
 			case 1: {
@@ -85,12 +85,12 @@ public class ProductRESTSearchTest extends TestCase {
 		RestClient client = new RestClient();
 		Resource resource = client.resource(urlPrefix + "jaxrs/Category/1");
 
-		JSONObject category = resource.accept("application/json").get(JSONObject.class);
+		JsonObject category = resource.accept("application/json").get(JsonObject.class);
 		assertEquals("Entertainment", category.get("name"));
 		assertEquals(new Long(1), category.get("id"));
-		JSONArray subCategories = (JSONArray) category.get("subCategories");
+		JsonArray subCategories = (JsonArray) category.get("subCategories");
 		for (int i = 0; i < subCategories.size(); i++) {
-			JSONObject subCategory = (JSONObject) subCategories.get(i);
+			JsonObject subCategory = (JsonObject) subCategories.get(i);
 			switch (((Long) subCategory.get("id")).intValue()) {
 			case 2: {
 				assertEquals(new Long(2), subCategory.get("id"));
@@ -118,16 +118,16 @@ public class ProductRESTSearchTest extends TestCase {
 		RestClient client = new RestClient();
 		Resource resource = client.resource(urlPrefix + "jaxrs/Category");
 
-		JSONArray categories = resource.accept("application/json").get(JSONArray.class);
+		JsonArray categories = resource.accept("application/json").get(JsonArray.class);
 		for (int k = 0; k < categories.size(); k++) {
-			JSONObject category = (JSONObject) categories.get(k);
+			JsonObject category = (JsonObject) categories.get(k);
 			switch (((Long) category.get("id")).intValue()) {
 			case 1: {
 				assertEquals("Entertainment", category.get("name"));
 				assertEquals(new Long(1), category.get("id"));
-				JSONArray subCategories = (JSONArray) category.get("subCategories");
+				JsonArray subCategories = (JsonArray) category.get("subCategories");
 				for (int i = 0; i < subCategories.size(); i++) {
-					JSONObject subCategory = (JSONObject) subCategories.get(i);
+					JsonObject subCategory = (JsonObject) subCategories.get(i);
 					switch (((Long) subCategory.get("id")).intValue()) {
 					case 2: {
 						assertEquals(new Long(2), subCategory.get("id"));
@@ -154,9 +154,9 @@ public class ProductRESTSearchTest extends TestCase {
 			case 10: {
 				assertEquals("Electronics", category.get("name"));
 				assertEquals(new Long(10), category.get("id"));
-				JSONArray subCategories = (JSONArray) category.get("subCategories");
+				JsonArray subCategories = (JsonArray) category.get("subCategories");
 				for (int i = 0; i < subCategories.size(); i++) {
-					JSONObject subCategory = (JSONObject) subCategories.get(i);
+					JsonObject subCategory = (JsonObject) subCategories.get(i);
 					switch (((Long) subCategory.get("id")).intValue()) {
 					case 12: {
 						assertEquals(new Long(12), subCategory.get("id"));

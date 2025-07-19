@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<server description="Customer Order Services">
+    <featureManager>
+        <feature>jakartaee-10.0</feature>
+        <feature>microProfile-6.0</feature>
+        <feature>restConnector-2.0</feature>
+    </featureManager>
+    
+    <httpEndpoint id="defaultHttpEndpoint" 
+                  httpPort="9080" 
+                  httpsPort="9443"/>
+    
+    <application location="CustomerOrderServicesApp.ear"/>
+    
+    <dataSource id="orderDS" jndiName="jdbc/orderds">
+        <jdbcDriver>
+            <library>
+                <fileset dir="/opt/liberty/usr/shared/resources" includes="*.jar"/>
+            </library>
+        </jdbcDriver>
+        <properties.postgresql serverName="${DB_HOST}" 
+                              portNumber="${DB_PORT}"
+                              databaseName="${DB_NAME}"
+                              user="${DB_USER}"
+                              password="${DB_PASSWORD}"/>
+    </dataSource>
+</server>

@@ -7,24 +7,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.pwte.example.domain.AbstractCustomer;
 import org.pwte.example.domain.Address;
@@ -38,13 +38,15 @@ import org.pwte.example.exception.OrderModifiedException;
 import org.pwte.example.exception.ProductDoesNotExistException;
 import org.pwte.example.service.CustomerOrderServices;
 
-import com.ibm.json.java.JSONArray;
-import com.ibm.json.java.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Path("/Customer")
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class CustomerOrderResource {
 	CustomerOrderServices customerOrderServices = null;
+	private final ObjectMapper objectMapper = new ObjectMapper();
 	
 	public CustomerOrderResource() 
 	{
@@ -227,10 +229,10 @@ public class CustomerOrderResource {
 		try
 		{
 			AbstractCustomer customer = customerOrderServices.loadCustomer();
-			JSONObject data = new JSONObject();
-			JSONArray groups = new JSONArray();
+			ObjectNode data = objectMapper.createObjectNode();
+			ArrayNode groups = objectMapper.createArrayNode();
 			
-			JSONObject name = new JSONObject();
+			ObjectNode name = objectMapper.createObjectNode();
 			name.put("name", "name");
 			name.put("label", "Name");
 			name.put("type", "string");
@@ -242,20 +244,20 @@ public class CustomerOrderResource {
 				data.put("type","business");
 				data.put("label","Business Customer");
 				
-				JSONObject desc = new JSONObject();
+				ObjectNode desc = objectMapper.createObjectNode();
 				desc.put("name", "description");
 				desc.put("label", "Description");
 				desc.put("type", "text");
 				groups.add(desc);
 				
-				JSONObject bp = new JSONObject();
+				ObjectNode bp = objectMapper.createObjectNode();
 				bp.put("name", "businessPartner");
 				bp.put("label", "Business Partner");
 				bp.put("type", "string");
 				bp.put("readonly", "true");
 				groups.add(bp);
 				
-				JSONObject vd = new JSONObject();
+				ObjectNode vd = objectMapper.createObjectNode();
 				vd.put("name", "volumeDiscount");
 				vd.put("label", "Volume Discount");
 				vd.put("type", "string");
@@ -268,14 +270,14 @@ public class CustomerOrderResource {
 				data.put("type","residential");
 				data.put("label","Residential Customer");
 				
-				JSONObject freq = new JSONObject();
+				ObjectNode freq = objectMapper.createObjectNode();
 				freq.put("name", "frequentCustomer");
 				freq.put("label", "Frequent Customer");
 				freq.put("type", "string");
 				freq.put("readonly", "true");
 				groups.add(freq);
 				
-				JSONObject hs = new JSONObject();
+				ObjectNode hs = objectMapper.createObjectNode();
 				hs.put("name", "householdSize");
 				hs.put("label", "Household Size");
 				hs.put("type", "number");
