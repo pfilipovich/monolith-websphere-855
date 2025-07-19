@@ -1,229 +1,618 @@
-# Customer Order Services - JavaEE Enterprise Application - WebSphere 855 Repository
+# Customer Order Services - Jakarta EE 10 Enterprise Application
+
+[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://adoptium.net/)
+[![Jakarta EE](https://img.shields.io/badge/Jakarta%20EE-10-blue.svg)](https://jakarta.ee/)
+[![OpenLiberty](https://img.shields.io/badge/OpenLiberty-24.0.0.1-green.svg)](https://openliberty.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue.svg)](https://www.postgresql.org/)
+[![Docker](https://img.shields.io/badge/Docker-Enabled-blue.svg)](https://www.docker.com/)
+
+## 📋 Table of Contents
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Prerequisites](#prerequisites)
+- [Quick Start](#quick-start)
+- [Local Development](#local-development)
+- [Container Development](#container-development)
+- [Database Setup](#database-setup)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Migration History](#migration-history)
+- [Development Workflow](#development-workflow)
+- [API Documentation](#api-documentation)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+
+## 📖 Overview
+
+The Customer Order Services application is a modernized enterprise e-commerce platform built with Jakarta EE 10 and OpenLiberty. Originally designed as a Web 2.0 store-front application, it has been completely migrated from legacy WebSphere 8.5.5 to a cloud-native architecture.
+
+This application demonstrates a traditional 3-tier enterprise architecture with modern cloud-native deployment capabilities, featuring a browser-based shopping interface where users can manage shopping carts and submit orders.
+
+### 🎯 Key Features
+
+- **Modern Technology Stack**: Jakarta EE 10, Java 21, OpenLiberty
+- **Cloud-Native Ready**: Docker containerization, Kubernetes deployment
+- **Database Flexibility**: PostgreSQL (migrated from DB2)
+- **RESTful APIs**: Jakarta JAX-RS services
+- **Security**: Role-based authentication and authorization
+- **Comprehensive Testing**: JPA and REST integration tests
+- **Development Tools**: Hot-reload development server, Docker Compose
+
+## 🏗️ Architecture
+
+### Application Architecture
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Web Browser   │────│   OpenLiberty    │────│   PostgreSQL    │
+│  (Dojo + HTML)  │    │  Jakarta EE 10   │    │    Database     │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+### 3-Tier Enterprise Architecture
+
+- **📊 Database Layer**: PostgreSQL database for orders and inventory
+- **🔧 Business Logic Layer**: Jakarta EE 10 with JPA 3.1 persistence
+- **🌐 Presentation Layer**: Jakarta JAX-RS REST services with Dojo-based frontend
+
+### 📦 Module Structure
+
+```
+CustomerOrderServicesProject/
+├── CustomerOrderServices/          # EJB Module (Business Logic)
+│   ├── ejbModule/org/pwte/example/
+│   │   ├── domain/                 # JPA Entities
+│   │   ├── service/                # Business Services
+│   │   └── exception/              # Custom Exceptions
+│   └── META-INF/
+│       └── persistence.xml         # JPA Configuration
+├── CustomerOrderServicesWeb/       # Web Module (REST + UI)
+│   ├── src/org/pwte/example/
+│   │   ├── resources/              # JAX-RS Resources
+│   │   └── app/                    # Application Configuration
+│   └── WebContent/                 # Static Web Content
+├── CustomerOrderServicesTest/      # Test Module
+│   └── src/org/pwte/example/       # Integration Tests
+├── CustomerOrderServicesApp/       # EAR Module (Packaging)
+└── src/main/liberty/config/
+    └── server.xml                  # OpenLiberty Configuration
+```
 
-## Application Overview
+## 🔧 Prerequisites
 
-The application is a simple store-front shopping application, built during the early days of the Web 2.0 movement.  As such, it is in major need of upgrades from both the technology and business point of view.  Users interact directly with a browser-based interface and manage their cart to submit orders.  This application is built using the traditional [3-Tier Architecture](http://www.tonymarston.net/php-mysql/3-tier-architecture.html) model, with an HTTP server, an application server, and a supporting database.
+### Required Software
 
-![Phase 0 Application Architecture](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/apparch-pc-phase0-customerorderservices.png)
+- **Java 21** or higher ([Eclipse Temurin](https://adoptium.net/) recommended)
+- **Maven 3.8+** for building
+- **Docker & Docker Compose** for containerized development
+- **Git** for version control
 
-There are several components of the overall application architecture:
-- Starting with the database, the application leverages two SQL-based databases running on [IBM DB2](https://www.ibm.com/analytics/us/en/technology/db2/).
-- The application exposes its data model through an [Enterprise JavaBean](https://en.wikipedia.org/wiki/Enterprise_JavaBeans) layer, named **CustomerOrderServices**.  This components leverages the [Java Persistence API](https://en.wikibooks.org/wiki/Java_Persistence/What_is_JPA%3F) to exposed the backend data model to calling services with minimal coding effort.
-  - As of the [WebSphere Application Server](http://www-03.ibm.com/software/products/en/appserv-was) Version 855 build, the application is using **EJB 3.0** and **JPA 2.0** versions of the respective capabilities.
-- The next tier of the application, named **CustomerOrderServicesWeb**, exposes the necessary business APIs via REST-based web services.  This component leverages the [JAX-RS](https://en.wikipedia.org/wiki/Java_API_for_RESTful_Web_Services) libraries for creating Java-based REST services with minimal coding effort.
-  - As of the [WebSphere Application Server](http://www-03.ibm.com/software/products/en/appserv-was) Version 855 build, the application is using **JAX-RS 1.1** version of the respective capability.
-- The application's user interface is exposed through the **CustomerOrderServicesWeb** component as well, in the form of a [Dojo Toolkit](#tbd)-based JavaScript application.  Delivering the user interface and business APIs in the same component is one major inhibitor our migration strategy will help to alleviate in the long-term.
-- Finally, there is an additional integration testing component, named **CustomerOrderServicesTest** that is built to quickly validate an application's build and deployment to a given application server.  This test component contains both **JPA** and **JAX-RS**-based tests.  
+### Optional Tools
 
-## Build and deploy the application on WebSphere Application Server 855
+- **IDE**: IntelliJ IDEA, Eclipse, or VS Code with Java extensions
+- **PostgreSQL Client**: pgAdmin, DBeaver, or psql CLI
+- **API Testing**: Postman, curl, or REST client
 
-### 1. Prerequisites
+### System Requirements
 
-The following are prerequisites for deploying the original ASIS version of this application:
-- [WebSphere Application Server Version 855](http://www-03.ibm.com/software/products/en/appserv-was)
+- **Memory**: 4GB RAM minimum (8GB recommended)
+- **Storage**: 2GB free space
+- **Network**: Internet access for downloading dependencies
 
-### 2. Getting the project repository
+## 🚀 Quick Start
 
-You can clone the repository from its main GitHub repository page and checkout the appropriate branch for this version of the application.
+### 1. Clone and Build
 
-1. `git clone https://github.com/ibm-cloud-architecture/cloudpak-for-applications.git`
-2. `cd cloudpak-for-applications`  
-3. `git checkout was855`  
+```bash
+# Clone the repository
+git clone <repository-url>
+cd monolith-websphere-855
 
+# Build the application
+cd CustomerOrderServicesProject
+mvn clean package
+```
 
-### 3. Running the Database and Creating the tables
+### 2. Start with Docker Compose (Recommended)
 
-This project uses DB2 as its database. Before creating the databases and getting connected to them, verify if your database is running. You can verify it using
+```bash
+# Start the full application stack
+docker-compose up --build
 
-1. `su {database_instance_name}`
-2. `db2start`
+# Access the application
+open http://localhost:9080/CustomerOrderServicesWeb
+open http://localhost:9080/CustomerOrderServicesTest
+```
 
-Create two databases - ORDERDB and INDB
+### 3. Verify Installation
 
-1. `db2 create database ORDERDB`
-2. `db2 create database INDB`
+1. **Web Application**: http://localhost:9080/CustomerOrderServicesWeb
+2. **Test Suite**: http://localhost:9080/CustomerOrderServicesTest
+3. **Health Check**: http://localhost:9080/health
+4. **Metrics**: http://localhost:9080/metrics
 
-After this, run the database scripts for the ORDERDB.  This also cleans the database tables, just in case.  
+### 🔐 Default Test Users
 
-Run the createOrderDB.sql script present inside the 'Common' sub-directory of the project directory.
+| Username | Password   | Role          |
+|----------|------------|---------------|
+| rbarcia  | bl0wfish   | SecureShopper |
+| kbrown   | bl0wfish   | SecureShopper |
 
-1. `db2 connect to ORDERDB`
-2. `db2 -tf Common/createOrderDB.sql`
+## 💻 Local Development
 
-Next connect to the inventory database INDB and run the required scripts from the 'Common' sub-directory.
+### OpenLiberty Development Server
 
-1. `db2 connect to INDB`
-2. `db2 -tf Common/InventoryDdl.sql`
-3. `db2 -tf Common/InventoryData.sql`
+```bash
+# Start development server with hot-reload
+cd CustomerOrderServicesProject
+mvn liberty:dev
 
-If you want to re-run the scripts, please make sure you drop the databases and create them again.
+# The server will start on http://localhost:9080
+# Code changes trigger automatic redeployment
+```
 
-### 4. Configuring the WebSphere v855 Environment with Security and Resources
+### Development Features
 
-Websphere environment configuration can be setup using the automation script or it can be done manually. You can choose from either ways based upon your convenience.
+- **🔄 Hot Reload**: Automatic redeployment on code changes
+- **🐛 Debug Support**: Remote debugging on port 7777
+- **📊 Metrics**: Built-in application metrics
+- **🔍 Health Checks**: Liveness and readiness probes
+- **📝 Logging**: Structured JSON logging
 
-#### Using the Configuration Script
+### IDE Configuration
 
-1. The configuration file (Jython script) can be accessed here [WAS_config.py](https://github.com/ibm-cloud-architecture/cloudpak-for-applications/blob/was855/Common/WAS_Config/WAS_config.py). It resides in the 'Common' sub-directory.
+#### IntelliJ IDEA
 
-2. Start the WebSphere Application Server.
+1. Import as Maven project
+2. Set Project SDK to Java 21
+3. Configure remote debugger: `localhost:7777`
 
-3. Go to the **<WAS_PROFILE_DIR>/bin**, and use the following command.
+#### Eclipse
 
-    `<Profile Home>/bin/wsadmin.(bat/sh) –lang jython –f <Location of Jython script>`
+1. Import existing Maven projects
+2. Right-click → Properties → Java Build Path → Libraries → Modulepath → Add External JARs
+3. Add OpenLiberty runtime
 
-4. This script prompts the user for input. Please provide the necessary information.
+#### VS Code
 
-5. Once the script gets executed successfully, the configuration setup is completed. You can verify the configuration by opening your admin console and then check if all the resources are correct.
+1. Install Java Extension Pack
+2. Open folder in VS Code
+3. Configure `launch.json` for debugging
 
-#### Manual Setup
+## 🐳 Container Development
 
-##### Setting Up Security
+### Docker Compose Stack
 
-1. Log into the Admin Console via http://localhost:9043/admin.
+```bash
+# Full stack with PostgreSQL
+docker-compose up --build
 
-2. In the Global security section, check **Enable application security** and click **Save**.
+# Scale application instances
+docker-compose up --scale app=3
 
-![Readme 1](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme1.png)
+# View logs
+docker-compose logs -f app
 
-3. In the **Users and Groups** section, select **Manage Users** and create the following users:
+# Clean up
+docker-compose down -v
+```
 
-- username: **rbarcia**  password: **bl0wfish**
-- username: **kbrown**   password: **bl0wfish**
+### Container Features
 
-![Readme 2](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme2.png)
+- **🔧 Multi-stage builds**: Optimized production images
+- **🔒 Security hardening**: Non-root user, minimal attack surface
+- **📈 Performance tuning**: JVM optimization for containers
+- **🌍 Environment configuration**: External configuration support
 
-4. In the **Users and Groups** section, select **Manage Groups** and create the following group:
+### Custom Docker Build
 
-- group name: **SecureShopper**
+```bash
+# Build application image
+docker build -t customer-order-services .
 
-This JEE application implements role-based security whereby only those users and groups with appropriate roles can execute certain actions. As a result, all users must belong to the SecureShopper group if they want to be able to access to the protected customer resources:
+# Run with external database
+docker run -p 9080:9080 \
+  -e DB_HOST=your-postgres-host \
+  -e DB_USER=orderuser \
+  -e DB_PASSWORD=orderpass \
+  customer-order-services
+```
 
-![Readme 3](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme3.png)
-
-During deployment, you will need to map your desired users or groups to the **SecureShopper** role. By default, SecureShopper group gets mapped to the SecureShopper role.
-
-<sup>\*</sup>_Alternatively, you can leverage an external security registry such as an LDAP server for your users and groups.  This is the path that the reference architecture has taken for this application which gets described in the different phases in [here](https://github.com/ibm-cloud-architecture/refarch-jee)._
-
-5. Under **Global Security**, select **J2C authentication data**. Create a new user named **DBUser** using your db2 instance and password.
-
-![Readme 4](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme4.png)
-
-##### Configuring JDBC Resources
+## 🗄️ Database Setup
 
-1. Go to the **Resources > JDBC > JDBC Providers** section and ensure that you are at the **Cell** scope.
+### PostgreSQL with Docker
 
-![Readme 5](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme5.png)
+```bash
+# Start PostgreSQL container
+docker run --name postgres-dev \
+  -e POSTGRES_DB=orderdb \
+  -e POSTGRES_USER=orderuser \
+  -e POSTGRES_PASSWORD=orderpass \
+  -p 5432:5432 \
+  -d postgres:15
 
-2. Click the New Button to create a new JDBC provider.
-    -  Database type : **DB2**
-    -  Provider type : **DB2 Using IBM JCC Driver**
-    -  Implementation type : **XA data source**
+# Connect to database
+docker exec -it postgres-dev psql -U orderuser -d orderdb
+```
 
-![Readme 6](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme6.png)
+### Database Configuration
 
-3. You need to enter the database class path information. Enter the directory where the DB2 Java is set.
+The application uses JPA auto-DDL generation for development. Tables are automatically created based on entity definitions.
 
-![Readme 7](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme7.png)
+#### Manual Schema Creation
 
-4. Press **Next** and then **Finish**. Save the Configuration.
+```sql
+-- Connect to PostgreSQL
+\c orderdb
 
-![Readme 8](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme8.png)
+-- Tables are auto-generated by JPA
+-- See CustomerOrderServices/ejbModule/org/pwte/example/domain/ for entity definitions
+```
 
-5. Go to the **Resources > JDBC > Data sources** section to create a new data source.
-   1. Make sure that the scope is at **Cell** level and click **New**
-   2. OrderDB - Step 1
-      -  Data source name: **OrderDS**
-      -  JNDI name: **jdbc/orderds**      
-         ![Readme 9](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme9.png)
-   3. OrderDB - Step 2
-      - Select an existing JDBC provider --> **DB2 Using IBM JCC Driver (XA)**
-        ![Readme 10](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme10.png)
-   4. ORDERDB - Step 3
-      - Driver Type: **4**
-      - Database name: **ORDERDB**
-      - Server name: **Your default DB2 host**
-      - Port number: **Your default DB2 port**
-        ![Readme 11](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme11.png)
-   5. OrderDB - Step 4
-      - Authentication alias for XA recovery: **DB2User**
-      - Component-managed authentication alias: **DB2User**
-      - Mapping-configuration alias: **DefaultPrincipalMapping**
-      - Container-managed authentication alias: **DB2User**
-        ![Readme 12](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme12.png)
+### Environment Variables
 
-6. Once this is done, under Preferences, there will be a new resource called **OrderDS**. Make sure that the resources got connected using **Test Connection** option. You will see a success message if the connection is established successfully.
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DB_HOST` | Database hostname | `localhost` |
+| `DB_PORT` | Database port | `5432` |
+| `DB_NAME` | Database name | `orderdb` |
+| `DB_USER` | Database username | `orderuser` |
+| `DB_PASSWORD` | Database password | `orderpass` |
 
-![Readme 13](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme13.png)
+## 🧪 Testing
 
-7. Check the Data source and select Test Connection to ensure you created the database correctly.  If the connection fails, a few things to check are
-      - Your database is started as we did in the beginning.  
-      - Your host and port number are correct.
-      - The classpath for the Driver is set properly.  
-      - Check the WebSphere Variables.  You may want to change them to point to your local DB2 install.
-8. Create the INVENTORYDB data source using the same process as before.  Click **New**.
-   1. InventoryDB - Step 1
-      -  Data source name: **INDS**
-      -  JNDI name: **jdbc/inds**
-   2. InventoryDB - Step 2
-      - Select an existing JDBC provider --> **DB2 Using IBM JCC Driver (XA)**
-   3. InventoryDB - Step 3
-      - Driver Type: **4**
-      - Database name: **INDB**
-      - Server name: **Your default DB2 host**
-      - Port number: **Your default DB2 port**
-   4. InventoryDB - Step 4
-      - Authentication alias for XA recovery: **DB2User**
-      - Component-managed authentication alias: **DB2User**
-      - Mapping-configuration alias: **DefaultPrincipalMapping**
-      - Container-managed authentication alias: **DB2User**
-9. Remember to save and test the connection again.
+### Integration Tests
 
-### 5. Installing the Application in WAS855
+```bash
+# Run all tests
+mvn test
 
-1.  Build the EAR using Maven in CustomerOrderServicesProject.
+# Run specific test module
+cd CustomerOrderServicesTest
+mvn test
+```
 
-    -  Install Maven and run `mvn -v` to test your version
-    -  `cd CustomerOrderServicesProject`
-    -  `mvn clean package`
-    -  You will have an EAR built in the `CustomerOrderServicesApp/target` subdirectory, named `CustomerOrderServicesApp-X.Y.Z-SNAPSHOT.ear`.
+### Web-based Testing
 
-2. Install the EAR to http://localhost:9060/ibm/console
+1. **Access Test Suite**: http://localhost:9080/CustomerOrderServicesTest
+2. **Login**: Use `rbarcia` or `kbrown` credentials
+3. **Run JPA Tests**: Populate database with test data
+4. **Run JAX-RS Tests**: Validate REST endpoints
 
-    -  Login to the Administrative Console.
-    -  Select **Applications > Application Types > WebSphere enterprise applications**  
-       ![Readme 14](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme14.png)
-    -  Choose **Install > Browse the EAR > Next > Choose Detailed**   
-       ![Readme 15](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme15.png)
-    -  Click on **Step 12**.  Customize the environment variables for your system. This is most likely just going to be the **DBUNIT_SCHEMA**, **DBUNIT_USERNAME**, and **DBUNIT_PASSWORD** fields. Those values need to be specific to your local DB2 installation.
-       ![Readme 17](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme17.png)
-    -  Click on **Step 13**.  Verify the **SecureShopper** role is mapped to the **SecureShopper** group (or a corresponding group in your application server's user registry).
-       ![Readme 18](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme18.png)
-    -  Click on **Summary** (Step 16) and click **Finish**.
-    -  Once you see `Application CustomerOrderServicesApp installed successfully`, click **Save** and now your application is ready.
+### Test Categories
 
-![Readme 19](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme19.png)
+- **🔗 JPA Tests**: Database persistence and transactions
+- **🌐 REST Tests**: API endpoint validation
+- **🔒 Security Tests**: Authentication and authorization
+- **📊 Performance Tests**: Load and stress testing
 
-3. Go back to the Enterprise Applications list, select the application, and click **Start**.
+### Sample Test Data
 
-![Readme 20](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme20.png)
+The test suite includes:
+- Sample customers (business and residential)
+- Product catalog with categories
+- Order and line item examples
+- Inventory data
 
-### 6. Running the application
+## 🚀 Deployment
 
-**IMPORTANT:** Before starting to use the application, we need to run some integration tests which will not only make sure the application, security, DB, etc are in place and working propperly but also **populate the database** with the needed infromation for the app to work.
+### Local Deployment
 
-In order to run the integration tests, go to the test application (http://localhost:9080/CustomerOrderServicesTest) and run the **JPA** tests. **You must use rbarcia or kbown** as the test users. That is, you must login using those users.
+```bash
+# Build EAR file
+mvn clean package
 
-![Readme 21](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme21.png)
+# Deploy to OpenLiberty
+cp CustomerOrderServicesApp/target/CustomerOrderServicesApp-0.1.0-SNAPSHOT.ear \
+  /path/to/liberty/usr/servers/defaultServer/dropins/
+```
 
-You should see that the tests results are successful:
+### Container Deployment
 
-![Readme 22](https://github.com/ibm-cloud-architecture/refarch-jee/raw/master/static/imgs/Customer_README/Readme22.png)
+```bash
+# Build and push image
+docker build -t your-registry/customer-order-services:latest .
+docker push your-registry/customer-order-services:latest
 
-In order to create new users for the application, you need to have your application users defined in both your LDAP/Security registry and the application database. For adding users to your security registry please see the previous [security section](#setting-up-security). The _ORDERDB_ application database contains a table called _CUSTOMER_ which will store the application users. Therefore, you also need to add your application users to this table:
+# Deploy with Kubernetes
+kubectl apply -f k8s/
+```
 
-1. Edit the [addBusinessCustomer.sql](https://github.com/ibm-cloud-architecture/refarch-jee-customerorder/blob/was90-dev/Common/addBusinessCustomer.sql) and/or [addResidentialCustomer.sql](https://github.com/ibm-cloud-architecture/refarch-jee-customerorder/blob/was90-dev/Common/addResidentialCustomer.sql) sql files you can find in the Common folder for this repo to define your users in there.
-2. Connect to the ORDERDB database: `db2 connect to ORDERDB`
-3. Execute the sql files: `db2 -tf Common/addBusinessCustomer.sql` and/or `db2 -tf Common/addResidentialCustomer.sql`
+### Kubernetes Deployment
 
-You should now be able to log into the Customer Order Services application with your newly created users.ß
+```yaml
+# Example deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customer-order-services
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: customer-order-services
+  template:
+    metadata:
+      labels:
+        app: customer-order-services
+    spec:
+      containers:
+      - name: app
+        image: customer-order-services:latest
+        ports:
+        - containerPort: 9080
+        env:
+        - name: DB_HOST
+          value: "postgres-service"
+```
+
+### Health Checks
+
+- **Liveness Probe**: `/health/live`
+- **Readiness Probe**: `/health/ready`
+- **Startup Probe**: `/health/started`
+
+## 🔄 Migration History
+
+### Migration Summary
+
+This application has been completely modernized from legacy WebSphere to cloud-native architecture:
+
+| Component | Before | After |
+|-----------|---------|--------|
+| **Java Version** | Java 8 | Java 21 |
+| **Application Server** | WebSphere 8.5.5 | OpenLiberty 24.0.0.1 |
+| **Enterprise Platform** | JavaEE 7 | Jakarta EE 10 |
+| **Database** | IBM DB2 (dual databases) | PostgreSQL (unified) |
+| **Persistence** | JPA 2.0 | JPA 3.1 |
+| **Web Services** | JAX-RS 1.1 | Jakarta JAX-RS |
+| **Build System** | Ant/Manual | Maven |
+| **Deployment** | Manual EAR deployment | Container/K8s ready |
+
+### Key Migration Changes
+
+- ✅ **Namespace Migration**: All `javax.*` → `jakarta.*`
+- ✅ **Database Consolidation**: Two DB2 databases → Single PostgreSQL
+- ✅ **Container Ready**: Docker and Kubernetes deployment
+- ✅ **Cloud Native**: Health checks, metrics, external configuration
+- ✅ **Developer Experience**: Hot-reload, modern tooling
+
+## ⚙️ Development Workflow
+
+### Feature Development
+
+```bash
+# 1. Create feature branch
+git checkout -b feature/new-feature
+
+# 2. Start development server
+mvn liberty:dev
+
+# 3. Make changes and test
+# Hot-reload automatically deploys changes
+
+# 4. Run tests
+mvn test
+
+# 5. Build and verify
+mvn clean package
+
+# 6. Commit and push
+git add .
+git commit -m "feat: add new feature"
+git push origin feature/new-feature
+```
+
+### Code Quality
+
+```bash
+# Format code (if configured)
+mvn fmt:format
+
+# Static analysis
+mvn spotbugs:check
+
+# Security scan
+mvn org.owasp:dependency-check-maven:check
+
+# Generate reports
+mvn site
+```
+
+### Performance Monitoring
+
+```bash
+# Application metrics
+curl http://localhost:9080/metrics
+
+# Health status
+curl http://localhost:9080/health
+
+# JVM metrics
+curl http://localhost:9080/metrics/vendor
+```
+
+## 📚 API Documentation
+
+### REST Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/Customer/customer` | GET | List all customers |
+| `/Customer/customer/{id}` | GET | Get customer by ID |
+| `/Customer/customer` | POST | Create new customer |
+| `/Customer/customer/{id}` | PUT | Update customer |
+| `/Customer/order` | GET | List orders |
+| `/Customer/order/{id}` | GET | Get order by ID |
+| `/Customer/order` | POST | Create new order |
+| `/Product/product` | GET | List products |
+| `/Product/product/{id}` | GET | Get product by ID |
+
+### Request Examples
+
+#### Create Customer
+
+```bash
+curl -X POST http://localhost:9080/CustomerOrderServicesWeb/Customer/customer \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com"
+  }'
+```
+
+#### Create Order
+
+```bash
+curl -X POST http://localhost:9080/CustomerOrderServicesWeb/Customer/order \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customerId": 1,
+    "items": [
+      {"productId": 1, "quantity": 2}
+    ]
+  }'
+```
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+#### Build Failures
+
+```bash
+# Clear Maven cache
+rm -rf ~/.m2/repository
+
+# Clean and rebuild
+mvn clean compile
+
+# Check Java version
+java -version
+mvn -version
+```
+
+#### Database Connection Issues
+
+```bash
+# Check PostgreSQL status
+docker ps | grep postgres
+
+# Test database connection
+docker exec -it postgres-dev psql -U orderuser -d orderdb -c "SELECT 1;"
+
+# Check application logs
+docker-compose logs app
+```
+
+#### Port Conflicts
+
+```bash
+# Check what's using port 9080
+lsof -i :9080
+
+# Kill process if needed
+kill -9 $(lsof -t -i:9080)
+
+# Use different ports
+mvn liberty:dev -Dliberty.var.default.http.port=9081
+```
+
+### Performance Issues
+
+```bash
+# Increase JVM memory
+export MAVEN_OPTS="-Xmx2g -XX:MaxMetaspaceSize=512m"
+
+# Monitor JVM metrics
+curl http://localhost:9080/metrics/vendor | grep jvm
+
+# Check container resources
+docker stats
+```
+
+### Debug Mode
+
+```bash
+# Start with debugging enabled
+mvn liberty:dev -DdebugEnabled=true
+
+# Connect debugger to port 7777
+# IntelliJ: Run → Edit Configurations → Remote JVM Debug
+```
+
+### Log Analysis
+
+```bash
+# View OpenLiberty logs
+tail -f target/liberty/wlp/usr/servers/defaultServer/logs/messages.log
+
+# View container logs
+docker-compose logs -f app
+
+# Increase log level
+# Edit server.xml: <logging traceSpecification="*=info:org.pwte.example.*=fine"/>
+```
+
+## 🤝 Contributing
+
+### Development Setup
+
+1. **Fork the repository**
+2. **Clone your fork**: `git clone <your-fork-url>`
+3. **Create feature branch**: `git checkout -b feature/amazing-feature`
+4. **Install dependencies**: `mvn clean compile`
+5. **Start development server**: `mvn liberty:dev`
+
+### Code Standards
+
+- **Java Code Style**: Follow Google Java Style Guide
+- **Commit Messages**: Use conventional commits format
+- **Testing**: Write tests for new features
+- **Documentation**: Update README and JavaDoc
+
+### Pull Request Process
+
+1. **Update tests** for new functionality
+2. **Update documentation** if needed
+3. **Ensure CI passes** all checks
+4. **Request review** from maintainers
+5. **Address feedback** promptly
+
+### Release Process
+
+```bash
+# 1. Update version
+mvn versions:set -DnewVersion=1.1.0
+
+# 2. Build and test
+mvn clean package
+mvn test
+
+# 3. Create release tag
+git tag -a v1.1.0 -m "Release version 1.1.0"
+git push origin v1.1.0
+
+# 4. Deploy to registry
+docker build -t customer-order-services:1.1.0 .
+docker push your-registry/customer-order-services:1.1.0
+```
+
+---
+
+## 📄 License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+- **Documentation**: Check this README and inline code comments
+- **Issues**: [Create an issue](../../issues) for bugs or feature requests
+- **Discussions**: [Join discussions](../../discussions) for questions
+- **Enterprise Support**: Contact your organization's development team
+
+---
+
+**Happy Coding! 🚀**

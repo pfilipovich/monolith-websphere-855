@@ -11,38 +11,42 @@ cd CustomerOrderServicesProject
 mvn clean package
 
 # The EAR file will be generated at:
-# CustomerOrderServicesApp/target/CustomerOrderServicesApp-X.Y.Z-SNAPSHOT.ear
+# CustomerOrderServicesApp/target/CustomerOrderServicesApp-0.1.0-SNAPSHOT.ear
 ```
 
-### Database Setup
+### Local Development with OpenLiberty
 ```bash
-# Start DB2 instance
-su {database_instance_name}
-db2start
+# Start OpenLiberty development server with hot-reload
+cd CustomerOrderServicesProject
+mvn liberty:dev
 
-# Create databases
-db2 create database ORDERDB
-db2 create database INDB
-
-# Setup ORDERDB tables
-db2 connect to ORDERDB
-db2 -tf Common/createOrderDB.sql
-
-# Setup INDB tables
-db2 connect to INDB
-db2 -tf Common/InventoryDdl.sql
-db2 -tf Common/InventoryData.sql
+# Access application at:
+# http://localhost:9080/CustomerOrderServicesWeb
+# http://localhost:9080/CustomerOrderServicesTest
 ```
 
-### WebSphere Configuration
+### Database Setup (PostgreSQL)
 ```bash
-# Automated configuration using Jython script
-# Edit Common/WAS_Config/was.properties first with correct paths
-cd Common/WAS_Config
-sh was_config_jython.sh -f was.properties
+# Start PostgreSQL via Docker (recommended for development)
+docker run --name postgres-dev \
+  -e POSTGRES_DB=orderdb \
+  -e POSTGRES_USER=orderuser \
+  -e POSTGRES_PASSWORD=orderpass \
+  -p 5432:5432 \
+  -d postgres:15
 
-# Run generated configuration
-<Profile Home>/bin/wsadmin.(bat/sh) –lang jython –f WAS_config.py
+# Setup database tables (migrate from Common/ scripts)
+# Tables will be auto-created via JPA DDL generation in development
+```
+
+### Container Development
+```bash
+# Build and run with Docker Compose
+docker-compose up --build
+
+# Access containerized application at:
+# http://localhost:9080/CustomerOrderServicesWeb
+# http://localhost:9080/CustomerOrderServicesTest
 ```
 
 ### Running Tests
@@ -51,18 +55,18 @@ Access the test application at `http://localhost:9080/CustomerOrderServicesTest`
 ## Application Architecture
 
 ### 3-Tier Enterprise Architecture
-- **Database Layer**: Two DB2 databases (ORDERDB for orders, INDB for inventory)
-- **Business Logic Layer**: EJB 3.0 with JPA 2.0 persistence
-- **Presentation Layer**: JAX-RS 1.1 REST services with Dojo-based JavaScript frontend
+- **Database Layer**: PostgreSQL database (migrated from DB2)
+- **Business Logic Layer**: Jakarta EE 10 with JPA 3.1 persistence
+- **Presentation Layer**: Jakarta JAX-RS REST services with Dojo-based JavaScript frontend
 
 ### Core Modules
 1. **CustomerOrderServices** (EJB Module)
    - Contains JPA entities and business service interfaces
-   - Uses EJB 3.0 and JPA 2.0
+   - Uses Jakarta EE 10 and JPA 3.1
    - Source in `ejbModule/org/pwte/example/`
 
 2. **CustomerOrderServicesWeb** (Web Module)
-   - JAX-RS REST endpoints at `/Customer` path
+   - Jakarta JAX-RS REST endpoints at `/Customer` path
    - Dojo-based frontend in `WebContent/`
    - Context root: `CustomerOrderServicesWeb`
 
@@ -84,18 +88,27 @@ Access the test application at `http://localhost:9080/CustomerOrderServicesTest`
 ### Security Configuration
 - Role-based security with `SecureShopper` role
 - Default test users: `rbarcia/bl0wfish`, `kbrown/bl0wfish`
-- J2C authentication data: `DBUser` for database connections
-- JNDI data sources: `jdbc/orderds`, `jdbc/inds`
+- OpenLiberty basic registry for development
+- JNDI data source: `jdbc/orderds` (PostgreSQL)
 
 ### Database Configuration  
-- **ORDERDB**: Customer orders and related data
-- **INDB**: Product inventory and catalog
-- Connection pooling via WebSphere XA data sources
-- OpenJPA as JPA provider with DB2 dialect
+- **PostgreSQL Database**: Combined customer orders and product inventory
+- Connection pooling via OpenLiberty data sources
+- Jakarta Persistence (JPA 3.1) with PostgreSQL dialect
+- Auto DDL generation for development environment
 
 ## File Structure Notes
 - Maven multi-module project with parent POM in `CustomerOrderServicesProject/`
 - Each module has its own `pom.xml` and follows Maven standard directory layout
-- Configuration automation scripts in `Common/WAS_Config/`
+- OpenLiberty server configuration in `CustomerOrderServicesProject/src/main/liberty/config/server.xml`
 - Deployment configuration in `Deployment/` including Dockerfile for containerization
-- WebSphere-specific descriptors in `META-INF/` and `WEB-INF/` directories
+- Jakarta EE descriptors in `META-INF/` and `WEB-INF/` directories
+- Legacy WebSphere configuration scripts in `Common/WAS_Config/` (archived)
+
+## Migration Status
+- ✅ **Java Version**: Upgraded to Java 21
+- ✅ **Application Server**: Migrated from WebSphere 8.5.5 to OpenLiberty
+- ✅ **Enterprise Framework**: Migrated from JavaEE to Jakarta EE 10
+- ✅ **Database**: Migrated from DB2 to PostgreSQL
+- ✅ **Build System**: Updated Maven configuration for Jakarta EE dependencies
+- ✅ **Namespace Migration**: All `javax.*` imports converted to `jakarta.*`
