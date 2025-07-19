@@ -102,7 +102,7 @@ public class CustomerOrderResource {
 			if((matchHeaders != null) && (matchHeaders.size()>0))
 			{
 				
-				lineItem.setVersion(new Long(matchHeaders.get(0)));
+				lineItem.setVersion(Long.valueOf(matchHeaders.get(0)));
 			}
 			Order openOrder = customerOrderServices.addLineItem(lineItem);
 			System.out.println("Open Order -> " + openOrder.getVersion());
@@ -131,7 +131,7 @@ public class CustomerOrderResource {
 			List<String> matchHeaders = headers.getRequestHeader("If-Match");
 			if((matchHeaders != null) && (matchHeaders.size()>0))
 			{
-				Order openOrder = customerOrderServices.removeLineItem(productId,new Long(matchHeaders.get(0)));
+				Order openOrder = customerOrderServices.removeLineItem(productId,Long.valueOf(matchHeaders.get(0)));
 				return Response.ok(openOrder).header("ETag", openOrder.getVersion()).build();	
 			}
 			else
@@ -161,7 +161,7 @@ public class CustomerOrderResource {
 			List<String> matchHeaders = headers.getRequestHeader("If-Match");
 			if((matchHeaders != null) && (matchHeaders.size()>0))
 			{
-				customerOrderServices.submit(new Long(matchHeaders.get(0)));
+				customerOrderServices.submit(Long.valueOf(matchHeaders.get(0)));
 				return Response.noContent().build();
 			}
 			else

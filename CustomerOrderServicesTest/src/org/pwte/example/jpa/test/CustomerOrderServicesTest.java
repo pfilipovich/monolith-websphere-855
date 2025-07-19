@@ -5,6 +5,7 @@ package org.pwte.example.jpa.test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Properties;
 import java.util.Set;
 
@@ -298,7 +299,7 @@ public class CustomerOrderServicesTest extends DBTestCase{
 			for(LineItem item:order.getLineitems())
 			{
 				System.out.println(item.getAmount() + "  -  " + item.getProduct().getName());
-				total = total.add(item.getAmount()).setScale(2,BigDecimal.ROUND_HALF_UP);
+				total = total.add(item.getAmount()).setScale(2,RoundingMode.HALF_UP);
 			}
 			
 			assertEquals(total, order.getTotal());
@@ -430,7 +431,7 @@ public class CustomerOrderServicesTest extends DBTestCase{
 				BigDecimal total = new BigDecimal(0);
 				for(LineItem item:order.getLineitems())
 				{
-					total = total.add(item.getAmount()).setScale(2,BigDecimal.ROUND_HALF_UP);
+					total = total.add(item.getAmount()).setScale(2,RoundingMode.HALF_UP);
 				}
 
 				

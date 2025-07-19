@@ -2,6 +2,7 @@ package org.pwte.example.domain;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -104,7 +105,7 @@ public class LineItem implements Serializable {
 			total = getOrder().getTotal();
 		System.out.println("Old total " + total);
 		System.out.println("Adding new -> " + amount);
-		total = total.add(amount).setScale(2, BigDecimal.ROUND_HALF_UP);
+		total = total.add(amount).setScale(2, RoundingMode.HALF_UP);
 		System.out.println("Total in CallBack -> " + total);
 		order.setTotal(total);
 	}
@@ -120,7 +121,7 @@ public class LineItem implements Serializable {
 			if (item.equals(this))
 				inOrders = true;
 			System.out.println("recalc -> " + item.getAmount());
-			total = total.add(item.getAmount()).setScale(2, BigDecimal.ROUND_HALF_UP);
+			total = total.add(item.getAmount()).setScale(2, RoundingMode.HALF_UP);
 		}
 		System.out.println("New Total recalc -> " + total);
 		if (inOrders)
@@ -131,7 +132,7 @@ public class LineItem implements Serializable {
 	void calculateTotalRemove() {
 		System.out.println("Removing LI -> " + product.getName());
 		BigDecimal total = getOrder().getTotal();
-		total = total.subtract(amount).setScale(2, BigDecimal.ROUND_HALF_UP);
+		total = total.subtract(amount).setScale(2, RoundingMode.HALF_UP);
 		order.setTotal(total);
 	}
 
