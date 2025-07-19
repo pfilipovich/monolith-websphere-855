@@ -648,3 +648,6 @@ Ultrathink and create README.md covering all project aspects which could be nece
 ---
 
 ## COMMIT 11
+
+### Comment:
+Обнаружил что у меня по умолчанию стоит Sonnet модель - НЕ самая умная и НЕ самая прожорливая
