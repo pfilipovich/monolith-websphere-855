@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/application_10.xsd" version="10">
+  <display-name>CustomerOrderServicesApp</display-name>
+  <module id="EJB_org.pwte.example.CustomerOrderServices">
+    <ejb>org.pwte.example-CustomerOrderServices-0.1.0-SNAPSHOT.jar</ejb>
+  </module>
+  <module id="WAR_org.pwte.example.CustomerOrderServicesWeb">
+    <web>
+      <web-uri>org.pwte.example-CustomerOrderServicesWeb-0.1.0-SNAPSHOT.war</web-uri>
+      <context-root>CustomerOrderServicesWeb</context-root>
+    </web>
+  </module>
+  <module id="WAR_org.pwte.example.CustomerOrderServicesTest">
+    <web>
+      <web-uri>org.pwte.example-CustomerOrderServicesTest-0.1.0-SNAPSHOT.war</web-uri>
+      <context-root>CustomerOrderServicesTest</context-root>
+    </web>
+  </module>
+  <security-role>
+    <role-name>SecureShopper</role-name>
+  </security-role>
+</application>

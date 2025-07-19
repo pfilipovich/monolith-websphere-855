@@ -1,12 +1,10 @@
 package org.pwte.example.jaxrs.test;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import org.apache.wink.client.Resource;
 import org.apache.wink.client.RestClient;
 
+import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 
@@ -17,13 +15,8 @@ public class ProductRESTSearchTest extends TestCase {
 	private String urlPrefix;
 
 	public void setUp() throws Exception {
-		try {
-			Context envEntryContext = (Context) new InitialContext().lookup("java:comp/env");
-			urlPrefix = (String) envEntryContext.lookup("CUSTOMER_ORDER_SERVICES_WEB_ENDPOINT");
-		} catch (NamingException e) {
-			e.printStackTrace();
-			urlPrefix = "https://localhost:9443/CustomerOrderServicesWeb/";
-		}
+		// Use default URL for Jakarta EE environment
+		urlPrefix = "https://localhost:9443/CustomerOrderServicesWeb/";
 	}
 
 	public void testProductResources() {
@@ -33,7 +26,7 @@ public class ProductRESTSearchTest extends TestCase {
 		JsonObject product = resource.accept("application/json").get(JsonObject.class);
 		assertEquals("Return of the Jedi", product.get("name"));
 		assertEquals(29.99, product.get("price"));
-		assertEquals(new Long(1), (Long) product.get("id"));
+		assertEquals(1L, product.getJsonNumber("id").longValue());
 		assertEquals("images/Return.jpg", product.get("image"));
 		assertEquals("Episode 6, Luke has the final confrontation with his father!", product.get("description"));
 	}
@@ -46,11 +39,11 @@ public class ProductRESTSearchTest extends TestCase {
 		for (int i = 0; i < productList.size(); i++) {
 			JsonObject product = (JsonObject) productList.get(i);
 
-			switch (((Long) product.get("id")).intValue()) {
+			switch (product.getJsonNumber("id").intValue()) {
 			case 1: {
 				assertEquals("Return of the Jedi", product.get("name"));
 				assertEquals(29.99, product.get("price"));
-				assertEquals(new Long(1), product.get("id"));
+				assertEquals(1L, product.getJsonNumber("id").longValue());
 				assertEquals("images/Return.jpg", product.get("image"));
 				assertEquals("Episode 6, Luke has the final confrontation with his father!",
 						product.get("description"));
@@ -59,7 +52,7 @@ public class ProductRESTSearchTest extends TestCase {
 			case 2: {
 				assertEquals("Empire Strikes Back", product.get("name"));
 				assertEquals(29.99, product.get("price"));
-				assertEquals(new Long(2), product.get("id"));
+				assertEquals(2L, product.getJsonNumber("id").longValue());
 				assertEquals("images/Empire.jpg", product.get("image"));
 				assertEquals("Episode 5, Luke finds out a secret that will change his destiny",
 						product.get("description"));
@@ -68,7 +61,7 @@ public class ProductRESTSearchTest extends TestCase {
 			case 3: {
 				assertEquals("New Hope", product.get("name"));
 				assertEquals(29.99, product.get("price"));
-				assertEquals(new Long(3), product.get("id"));
+				assertEquals(3L, product.getJsonNumber("id").longValue());
 				assertEquals("images/NewHope.jpg", product.get("image"));
 				assertEquals("Episode 4, after years of oppression, a band of rebels fight for freedom",
 						product.get("description"));
@@ -87,23 +80,23 @@ public class ProductRESTSearchTest extends TestCase {
 
 		JsonObject category = resource.accept("application/json").get(JsonObject.class);
 		assertEquals("Entertainment", category.get("name"));
-		assertEquals(new Long(1), category.get("id"));
+		assertEquals(1L, category.getJsonNumber("id").longValue());
 		JsonArray subCategories = (JsonArray) category.get("subCategories");
 		for (int i = 0; i < subCategories.size(); i++) {
 			JsonObject subCategory = (JsonObject) subCategories.get(i);
-			switch (((Long) subCategory.get("id")).intValue()) {
+			switch (subCategory.getJsonNumber("id").intValue()) {
 			case 2: {
-				assertEquals(new Long(2), subCategory.get("id"));
+				assertEquals(2L, subCategory.getJsonNumber("id").longValue());
 				assertEquals("Movies", subCategory.get("name"));
 				break;
 			}
 			case 3: {
-				assertEquals(new Long(3), subCategory.get("id"));
+				assertEquals(3L, subCategory.getJsonNumber("id").longValue());
 				assertEquals("Music", subCategory.get("name"));
 				break;
 			}
 			case 4: {
-				assertEquals(new Long(4), subCategory.get("id"));
+				assertEquals(4L, subCategory.getJsonNumber("id").longValue());
 				assertEquals("Games", subCategory.get("name"));
 				break;
 			}
@@ -121,26 +114,26 @@ public class ProductRESTSearchTest extends TestCase {
 		JsonArray categories = resource.accept("application/json").get(JsonArray.class);
 		for (int k = 0; k < categories.size(); k++) {
 			JsonObject category = (JsonObject) categories.get(k);
-			switch (((Long) category.get("id")).intValue()) {
+			switch (category.getJsonNumber("id").intValue()) {
 			case 1: {
 				assertEquals("Entertainment", category.get("name"));
-				assertEquals(new Long(1), category.get("id"));
+				assertEquals(1L, category.getJsonNumber("id").longValue());
 				JsonArray subCategories = (JsonArray) category.get("subCategories");
 				for (int i = 0; i < subCategories.size(); i++) {
 					JsonObject subCategory = (JsonObject) subCategories.get(i);
-					switch (((Long) subCategory.get("id")).intValue()) {
+					switch (subCategory.getJsonNumber("id").intValue()) {
 					case 2: {
-						assertEquals(new Long(2), subCategory.get("id"));
+						assertEquals(2L, subCategory.getJsonNumber("id").longValue());
 						assertEquals("Movies", subCategory.get("name"));
 						break;
 					}
 					case 3: {
-						assertEquals(new Long(3), subCategory.get("id"));
+						assertEquals(3L, subCategory.getJsonNumber("id").longValue());
 						assertEquals("Music", subCategory.get("name"));
 						break;
 					}
 					case 4: {
-						assertEquals(new Long(4), subCategory.get("id"));
+						assertEquals(4L, subCategory.getJsonNumber("id").longValue());
 						assertEquals("Games", subCategory.get("name"));
 						break;
 					}
@@ -153,23 +146,23 @@ public class ProductRESTSearchTest extends TestCase {
 			}
 			case 10: {
 				assertEquals("Electronics", category.get("name"));
-				assertEquals(new Long(10), category.get("id"));
+				assertEquals(10L, category.getJsonNumber("id").longValue());
 				JsonArray subCategories = (JsonArray) category.get("subCategories");
 				for (int i = 0; i < subCategories.size(); i++) {
 					JsonObject subCategory = (JsonObject) subCategories.get(i);
-					switch (((Long) subCategory.get("id")).intValue()) {
+					switch (subCategory.getJsonNumber("id").intValue()) {
 					case 12: {
-						assertEquals(new Long(12), subCategory.get("id"));
+						assertEquals(12L, subCategory.getJsonNumber("id").longValue());
 						assertEquals("TV", subCategory.get("name"));
 						break;
 					}
 					case 13: {
-						assertEquals(new Long(13), subCategory.get("id"));
+						assertEquals(13L, subCategory.getJsonNumber("id").longValue());
 						assertEquals("Cellphones", subCategory.get("name"));
 						break;
 					}
 					case 14: {
-						assertEquals(new Long(14), subCategory.get("id"));
+						assertEquals(14L, subCategory.getJsonNumber("id").longValue());
 						assertEquals("DVD Players", subCategory.get("name"));
 						break;
 					}

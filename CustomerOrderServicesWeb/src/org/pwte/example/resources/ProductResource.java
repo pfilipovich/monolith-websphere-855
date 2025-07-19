@@ -4,8 +4,6 @@ import java.util.Calendar;
 import java.util.List;
 
 import jakarta.ejb.EJB;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -30,12 +28,12 @@ import org.pwte.example.service.ProductSearchService;
 @Path("/Product")
 public class ProductResource {
 
-	@EJB ProductSearchService productSearch;
+	@EJB
+	private ProductSearchService productSearch;
 		
-		public ProductResource() throws NamingException
+		public ProductResource()
 		{
-			//Work around until Java EE 6
-	productSearch = (ProductSearchService) new InitialContext().lookup("ejblocal:org.pwte.example.service.ProductSearchService");
+			// Empty constructor - injection handled by container
 		}
 		
 		@GET

@@ -99,15 +99,9 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <configuration>
-          <webXml>WebContent/WEB-INF/web.xml</webXml>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
         <version>3.4.0</version>
         <configuration>
+          <webXml>WebContent/WEB-INF/web.xml</webXml>
           <webResources>
             <resource>
               <directory>WebContent</directory>

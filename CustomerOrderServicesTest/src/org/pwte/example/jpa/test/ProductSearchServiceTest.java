@@ -5,9 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
+import jakarta.ejb.EJB;
 
 import org.dbunit.DBTestCase;
 import org.dbunit.PropertiesBasedJdbcDatabaseTester;
@@ -22,7 +20,7 @@ import org.pwte.example.service.ProductSearchService;
 
 public class ProductSearchServiceTest extends DBTestCase {
 
-	
+	@EJB
 	private ProductSearchService productSearchService;
 	
 	public ProductSearchServiceTest(String name) {
@@ -34,24 +32,12 @@ public class ProductSearchServiceTest extends DBTestCase {
 		String DBUNIT_USERNAME = "";
 		String DBUNIT_PASSWORD = "";
 		
-		try {
-			Context envEntryContext = (Context) new InitialContext().lookup("java:comp/env");
-			
-			DBUNIT_DRIVER_CLASS = (String) envEntryContext.lookup("DBUNIT_DRIVER_CLASS");
-			DBUNIT_CONNECTION_URL = (String) envEntryContext.lookup("DBUNIT_CONNECTION_URL");
-			DBUNIT_SCHEMA = (String) envEntryContext.lookup("DBUNIT_SCHEMA");
-			DBUNIT_USERNAME = (String) envEntryContext.lookup("DBUNIT_USERNAME");
-			DBUNIT_PASSWORD = (String) envEntryContext.lookup("DBUNIT_PASSWORD");
-			
-		} catch (NamingException e) {
-			e.printStackTrace();
-			
-			DBUNIT_DRIVER_CLASS = "com.ibm.db2.jcc.DB2Driver";
-			DBUNIT_CONNECTION_URL = "jdbc:db2://localhost:50000/ORDERDB";
-			DBUNIT_SCHEMA = "DB2INST1";
-			DBUNIT_USERNAME = "DB2INST1";
-			DBUNIT_PASSWORD = "password";
-		}
+		// Use default DB2 configuration for Jakarta EE environment
+		DBUNIT_DRIVER_CLASS = "com.ibm.db2.jcc.DB2Driver";
+		DBUNIT_CONNECTION_URL = "jdbc:db2://localhost:50000/ORDERDB";
+		DBUNIT_SCHEMA = "DB2INST1";
+		DBUNIT_USERNAME = "DB2INST1";
+		DBUNIT_PASSWORD = "password";
 		
 		System.setProperty( PropertiesBasedJdbcDatabaseTester.DBUNIT_DRIVER_CLASS, DBUNIT_DRIVER_CLASS );
 	    System.setProperty( PropertiesBasedJdbcDatabaseTester.DBUNIT_CONNECTION_URL, DBUNIT_CONNECTION_URL );
@@ -62,11 +48,8 @@ public class ProductSearchServiceTest extends DBTestCase {
 	}
 	
 	public void setUp() throws Exception {
-		
 		super.setUp();
-		InitialContext ctx = new InitialContext();
-		productSearchService = (ProductSearchService)ctx.lookup("java:comp/env/ejb/ProductSearchService");
-		
+		// ProductSearchService will be injected via @EJB annotation
 	}
 	
 	@Override

@@ -7,10 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import jakarta.ejb.EJB;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -45,17 +44,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @Path("/Customer")
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class CustomerOrderResource {
-	CustomerOrderServices customerOrderServices = null;
+	@EJB
+	private CustomerOrderServices customerOrderServices;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	
 	public CustomerOrderResource() 
 	{
-		try {
-			InitialContext ctx = new InitialContext();
-			customerOrderServices = (CustomerOrderServices) ctx.lookup("ejblocal:org.pwte.example.service.CustomerOrderServices");
-		} catch (NamingException e) {
-			e.printStackTrace();
-		} 
+		// Empty constructor - injection handled by container
 	}
 
 	@GET

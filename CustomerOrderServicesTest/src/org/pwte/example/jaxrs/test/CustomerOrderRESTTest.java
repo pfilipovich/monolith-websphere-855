@@ -6,11 +6,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.wink.client.ClientConfig;
 import org.apache.wink.client.ClientResponse;
@@ -18,6 +15,7 @@ import org.apache.wink.client.Resource;
 import org.apache.wink.client.RestClient;
 import org.apache.wink.client.handlers.BasicAuthSecurityHandler;
 
+import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 
@@ -33,17 +31,11 @@ public class CustomerOrderRESTTest extends TestCase {
 		
 	public void setUp() throws Exception 
 	{
-		try {
-			Context envEntryContext = (Context) new InitialContext().lookup("java:comp/env");
-			urlPrefix = (String) envEntryContext.lookup("CUSTOMER_ORDER_SERVICES_WEB_ENDPOINT");
-			urlTestPrefix = (String) envEntryContext.lookup("CUSTOMER_ORDER_SERVICES_TEST_ENDPOINT");
-		} catch (NamingException e) {
-			e.printStackTrace();
-			urlPrefix = "https://localhost:9443/CustomerOrderServicesWeb/";
-			urlTestPrefix = "http://localhost:9080/CustomerOrderServicesTest/";
-		}
+		// Use default URLs for Jakarta EE environment
+		urlPrefix = "https://localhost:9443/CustomerOrderServicesWeb/";
+		urlTestPrefix = "http://localhost:9080/CustomerOrderServicesTest/";
 		
-		jakarta.ws.rs.core.Application app = new jakarta.ws.rs.core.Application() {
+		javax.ws.rs.core.Application app = new javax.ws.rs.core.Application() {
 	        public Set<Class<?>> getClasses() {
 	            Set<Class<?>> classes = new HashSet<Class<?>>();
 	    		classes.add(org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider.class);
@@ -105,7 +97,7 @@ public class CustomerOrderRESTTest extends TestCase {
 		RestClient client = new RestClient(clientConfig);
 
 		Resource customerAddress = client.resource(urlPrefix + "jaxrs/Customer/Address");
-		ClientResponse clientResponse = customerAddress.contentType(MediaType.APPLICATION_JSON).put(newAddress1.serialize());
+		ClientResponse clientResponse = customerAddress.contentType(MediaType.APPLICATION_JSON).put(newAddress1.toString());
 		
 		assertEquals(204, clientResponse.getStatusCode());
 		
@@ -118,7 +110,7 @@ public class CustomerOrderRESTTest extends TestCase {
 		JsonObject newAddress2 = resourceTest2.accept("application/json").get(JsonObject.class);
 		
 		Resource customerAddress2 = client.resource(urlPrefix + "jaxrs/Customer/Address");
-		ClientResponse clientResponse2 = customerAddress2.contentType(MediaType.APPLICATION_JSON).put(newAddress2.serialize());
+		ClientResponse clientResponse2 = customerAddress2.contentType(MediaType.APPLICATION_JSON).put(newAddress2.toString());
 		
 		assertEquals(204, clientResponse2.getStatusCode());
 		
@@ -137,7 +129,7 @@ public class CustomerOrderRESTTest extends TestCase {
 		JsonObject li1 = liTest.accept("application/json").get(JsonObject.class);
 		
 		Resource addTest = client.resource(urlPrefix + "jaxrs/Customer/OpenOrder/LineItem");
-		ClientResponse clientResponse = addTest.accept("application/json").contentType("application/json").post(li1.serialize());
+		ClientResponse clientResponse = addTest.accept("application/json").contentType("application/json").post(li1.toString());
 		MultivaluedMap<String, String> headers = clientResponse.getHeaders();
 		List<String> etag = headers.get("ETag");
 		System.out.println("ETag -> " + etag);
@@ -163,11 +155,11 @@ public class CustomerOrderRESTTest extends TestCase {
 		JsonObject li2 = liTest.accept("application/json").get(JsonObject.class);
 		
 		addTest = client.resource(urlPrefix + "jaxrs/Customer/OpenOrder/LineItem");
-		clientResponse = addTest.accept("application/json").contentType("application/json").post(li1.serialize());
+		clientResponse = addTest.accept("application/json").contentType("application/json").post(li1.toString());
 		assertEquals(412, clientResponse.getStatusCode());
 		
 		addTest = client.resource(urlPrefix + "jaxrs/Customer/OpenOrder/LineItem");
-		clientResponse = addTest.header("If-Match", version).accept("application/json").contentType("application/json").post(li2.serialize());
+		clientResponse = addTest.header("If-Match", version).accept("application/json").contentType("application/json").post(li2.toString());
 		
 		assertEquals(200, clientResponse.getStatusCode());
 		openOrder = clientResponse.getEntity(JsonObject.class);
@@ -178,7 +170,7 @@ public class CustomerOrderRESTTest extends TestCase {
 		JsonObject li3 = liTest.accept("application/json").get(JsonObject.class);
 		
 		addTest = client.resource(urlPrefix + "jaxrs/Customer/OpenOrder/LineItem");
-		clientResponse = addTest.header("If-Match", version).accept("application/json").contentType("application/json").post(li3.serialize());
+		clientResponse = addTest.header("If-Match", version).accept("application/json").contentType("application/json").post(li3.toString());
 		
 		version = clientResponse.getHeaders().get("ETag").get(0);
 		
@@ -186,14 +178,12 @@ public class CustomerOrderRESTTest extends TestCase {
 		openOrder = clientResponse.getEntity(JsonObject.class);
 		assertEquals(2, ((JsonArray)openOrder.get("lineitems")).size());
 		
-		long newQuan = ((Long)li2.get("quantity")) +((Long)li3.get("quantity"))  ;
+		long newQuan = li2.getJsonNumber("quantity").longValue() + li3.getJsonNumber("quantity").longValue();
 		
 		JsonArray lis = (JsonArray)openOrder.get("lineitems");
-		@SuppressWarnings("unchecked")
-		ListIterator<JsonObject> liJSON = lis.listIterator();
-		while(liJSON.hasNext())
+		for (int idx = 0; idx < lis.size(); idx++)
 		{
-			JsonObject liCheck = liJSON.next();
+			JsonObject liCheck = lis.getJsonObject(idx);
 			if(liCheck.get("productId") == li2.get("productId"))
 			{
 				assertEquals(newQuan, liCheck.get("quantity"));
@@ -205,7 +195,7 @@ public class CustomerOrderRESTTest extends TestCase {
 		JsonObject li4 = liTest.accept("application/json").get(JsonObject.class);
 		
 		addTest = client.resource(urlPrefix + "jaxrs/Customer/OpenOrder/LineItem");
-		clientResponse = addTest.header("If-Match", version).accept("application/json").contentType("application/json").post(li4.serialize());
+		clientResponse = addTest.header("If-Match", version).accept("application/json").contentType("application/json").post(li4.toString());
 		
 		version = clientResponse.getHeaders().get("ETag").get(0);
 		
@@ -328,27 +318,32 @@ public class CustomerOrderRESTTest extends TestCase {
 		//Residential User
 		RestClient client = new RestClient(clientConfig);
 		long householdSize = 3;
-		JsonObject data = new JsonObject();
-		data.put("type", "RESIDENTIAL");
-		data.put("householdSize",householdSize);
+		JsonObject data = Json.createObjectBuilder()
+			.add("type", "RESIDENTIAL")
+			.add("householdSize", householdSize)
+			.build();
 		Resource customerInfo = client.resource(urlPrefix + "jaxrs/Customer/Info");
-		ClientResponse clientResponse = customerInfo.contentType(MediaType.APPLICATION_JSON).post(data.serialize());
+		ClientResponse clientResponse = customerInfo.contentType(MediaType.APPLICATION_JSON).post(data.toString());
 		assertEquals(204, clientResponse.getStatusCode());
 		Resource resource = client.resource(urlPrefix + "jaxrs/Customer");
 		JsonObject customer = resource.accept("application/json").get(JsonObject.class);
 		assertEquals(customer.get("householdSize"),data.get("householdSize"));
-		data.put("householdSize",6);
-		clientResponse = customerInfo.contentType(MediaType.APPLICATION_JSON).post(data.serialize());
+		data = Json.createObjectBuilder()
+			.add("type", "RESIDENTIAL")
+			.add("householdSize", 6)
+			.build();
+		clientResponse = customerInfo.contentType(MediaType.APPLICATION_JSON).post(data.toString());
 		assertEquals(204, clientResponse.getStatusCode());
 		
 		//Business User
 		RestClient client2 = new RestClient(clientConfig2);
 		String desc = "High Tech Partner";
-		data = new JsonObject();
-		data.put("type", "BUSINESS");
-		data.put("description", desc);
+		data = Json.createObjectBuilder()
+			.add("type", "BUSINESS")
+			.add("description", desc)
+			.build();
 		customerInfo = client2.resource(urlPrefix + "jaxrs/Customer/Info");
-		clientResponse = customerInfo.contentType(MediaType.APPLICATION_JSON).post(data.serialize());
+		clientResponse = customerInfo.contentType(MediaType.APPLICATION_JSON).post(data.toString());
 		assertEquals(204, clientResponse.getStatusCode());
 		resource = client2.resource(urlPrefix + "jaxrs/Customer");
 		customer = resource.accept("application/json").get(JsonObject.class);
